@@ -35,14 +35,15 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO getCustomerById(Long id) {
         logger.info("Getting customer with id={}", id);
-        CustomerEntity entity = customerRepository.getOne(id);
-        return ModelMapper.convertEntityToDto(entity);
+//        CustomerEntity entity = customerRepository.getOne(id);
+        CustomerEntity customerEntity = customerRepository.findById(id).get();
+        return ModelMapper.convertEntityToDto(customerEntity);
     }
 
     @Override
     public List<CustomerDTO> getAllCustomers() {
         logger.info("Getting list of all customers");
-        List<CustomerEntity> customerEntities = customerRepository.findAll();
+        List<CustomerEntity> customerEntities = (List<CustomerEntity>) customerRepository.findAll();
         return customerEntities.stream().map(customerEntity -> ModelMapper.convertEntityToDto(customerEntity))
                 .collect(Collectors.toList());
     }
@@ -52,7 +53,8 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = new CustomerEntity();
         customerEntity.setName(name);
         logger.info("Adding customer");
-        customerRepository.saveAndFlush(customerEntity);
+//        customerRepository.saveAndFlush(customerEntity);
+        customerRepository.save(customerEntity);
         logger.info("Customer with name={} is added", name);
     }
 
@@ -109,7 +111,7 @@ public class CustomerServiceImpl implements CustomerService {
         String name = randomIdentifier();
         customerEntity.setName(name);
         if (customerEntity.getName() != null) {
-            customerRepository.saveAndFlush(customerEntity);
+            customerRepository.save(customerEntity);
             logger.info("Random customer is added");
         }
     }
