@@ -35,7 +35,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO getCustomerById(Long id) {
         logger.info("Getting customer with id={}", id);
-//        CustomerEntity entity = customerRepository.getOne(id);
         CustomerEntity customerEntity = customerRepository.findById(id).get();
         return ModelMapper.convertEntityToDto(customerEntity);
     }
@@ -53,7 +52,6 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = new CustomerEntity();
         customerEntity.setName(name);
         logger.info("Adding customer");
-//        customerRepository.saveAndFlush(customerEntity);
         customerRepository.save(customerEntity);
         logger.info("Customer with name={} is added", name);
     }
