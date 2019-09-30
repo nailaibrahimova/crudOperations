@@ -3,7 +3,7 @@ package az.pashabank.learning_sessions.crud_operations_with_database.service;
 import az.pashabank.learning_sessions.crud_operations_with_database.dao.CustomerEntity;
 import az.pashabank.learning_sessions.crud_operations_with_database.exception.CustomerNotFound;
 import az.pashabank.learning_sessions.crud_operations_with_database.exception.NotValidParameters;
-import az.pashabank.learning_sessions.crud_operations_with_database.mapper.ModelMapper;
+import az.pashabank.learning_sessions.crud_operations_with_database.mapper.CustomerMapper;
 import az.pashabank.learning_sessions.crud_operations_with_database.model.CustomerDTO;
 import az.pashabank.learning_sessions.crud_operations_with_database.repository.CustomerRepository;
 import org.slf4j.Logger;
@@ -37,14 +37,14 @@ public class CustomerServiceImpl implements CustomerService {
         logger.info("Getting customer with id={}", id);
 //        CustomerEntity entity = customerRepository.getOne(id);
         CustomerEntity customerEntity = customerRepository.findById(id).get();
-        return ModelMapper.convertEntityToDto(customerEntity);
+        return CustomerMapper.INSTANCE.convertEntityToDto(customerEntity);
     }
 
     @Override
     public List<CustomerDTO> getAllCustomers() {
         logger.info("Getting list of all customers");
         List<CustomerEntity> customerEntities = (List<CustomerEntity>) customerRepository.findAll();
-        return customerEntities.stream().map(customerEntity -> ModelMapper.convertEntityToDto(customerEntity))
+        return customerEntities.stream().map(customerEntity -> CustomerMapper.INSTANCE.convertEntityToDto(customerEntity))
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +64,7 @@ public class CustomerServiceImpl implements CustomerService {
         Long id = customer.getId();
         Optional<CustomerEntity> customerEntity = customerRepository.findById(id);
         if (customerEntity.isPresent()) {
-            String name = ModelMapper.convertDtoToEntity(customer).getName();
+            String name = CustomerMapper.INSTANCE.convertDtoToEntity(customer).getName();
             if (name != null) {
                 customerEntity.get().setName(name);
                 customerRepository.save(customerEntity.get());
