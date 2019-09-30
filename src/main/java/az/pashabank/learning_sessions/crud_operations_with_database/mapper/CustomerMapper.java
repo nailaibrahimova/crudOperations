@@ -6,10 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 
-//@Mapper(componentModel = "spring")
 @Mapper
 public interface CustomerMapper {
     CustomerMapper INSTANCE = Mappers.getMapper(CustomerMapper.class);
+
     CustomerEntity convertDtoToEntity(CustomerDTO customerDTO);
+
     CustomerDTO convertEntityToDto(CustomerEntity customerEntity);
 }

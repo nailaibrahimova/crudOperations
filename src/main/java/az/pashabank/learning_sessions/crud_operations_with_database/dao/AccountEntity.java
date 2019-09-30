@@ -7,20 +7,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "accounts")
 @Data
-public class CustomerEntity {
+public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "increment")
     @GenericGenerator(name = "increment", strategy = "increment")
     @Column(name = "id", unique = true, nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "login", nullable = false)
+    private String login;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(name = "created_at")
     @CreationTimestamp
@@ -30,11 +32,12 @@ public class CustomerEntity {
     @UpdateTimestamp
     private LocalDateTime updated_at;
 
-    public CustomerEntity() {
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customer_id")
+    private CustomerEntity customerEntity;
+
+    public AccountEntity() {
     }
 
-    public CustomerEntity(String name) {
-        this.name = name;
-    }
+
 }
-

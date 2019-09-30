@@ -1,7 +1,7 @@
 package az.pashabank.learning_sessions.crud_operations_with_database.exception;
 
-public class CustomerNotFound extends RuntimeException {
-    public CustomerNotFound(String message) {
+public class AccountException extends RuntimeException {
+    public AccountException(String message) {
         super(message);
     }
 }
