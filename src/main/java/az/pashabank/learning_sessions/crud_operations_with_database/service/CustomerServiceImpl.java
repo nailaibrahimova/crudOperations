@@ -30,8 +30,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO getCustomerById(Long id) {
         logger.info("ActionLog.getCustomerById: id={}", id);
-        CustomerEntity customerEntity = customerRepository.findById(id).get();
-        return CustomerMapper.INSTANCE.convertEntityToDto(customerEntity);
+        Optional<CustomerEntity> customerEntity = customerRepository.findById(id);
+        if (customerEntity.isPresent()) return CustomerMapper.INSTANCE.convertEntityToDto(customerEntity.get());
+        else {
+            CustomerException exception = new CustomerException("No customer with id=" + id);
+            logger.error("", exception);
+            throw exception;
+        }
     }
 
     @Override

@@ -5,7 +5,6 @@ import az.pashabank.learning_sessions.crud_operations_with_database.dao.Customer
 import az.pashabank.learning_sessions.crud_operations_with_database.exception.AccountException;
 import az.pashabank.learning_sessions.crud_operations_with_database.exception.CustomerException;
 import az.pashabank.learning_sessions.crud_operations_with_database.mapper.AccountMapper;
-import az.pashabank.learning_sessions.crud_operations_with_database.mapper.CustomerMapper;
 import az.pashabank.learning_sessions.crud_operations_with_database.model.AccountDTO;
 import az.pashabank.learning_sessions.crud_operations_with_database.repository.AccountRepository;
 import az.pashabank.learning_sessions.crud_operations_with_database.repository.CustomerRepository;
@@ -50,8 +49,9 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountDTO> getAllAccountsByCustomerId(Long customerId) {
         logger.info("ActionLog.getAllAccountsByCustomerId: id={}", customerId);
         if (!customerRepository.existsById(customerId)) {
-            logger.debug("ActionLog.getAllAccountsBtCustomerId: no customer with id{}" + customerId);
-            logger.error("", new CustomerException("No customer with such id"));
+            CustomerException exception = new CustomerException("ActionLog.getAllAccountsBtCustomerId: no customer with id=" + customerId);
+            logger.error("", exception);
+            throw exception;
         } else {
             Optional<CustomerEntity> customerEntity = customerRepository.findById(customerId);
             if (customerEntity.isPresent()) {
@@ -82,16 +82,20 @@ public class AccountServiceImpl implements AccountService {
             String password = AccountMapper.INSTANCE.convertDtoToEntityUpdate(account).getPassword();
             if (login != null) {
                 accountEntity.get().setLogin(login);
-                accountRepository.save(accountEntity.get());
+//                accountRepository.save(accountEntity.get());
                 logger.info("ActionLog.updateAccount: login of account with id={} is updated", accountEntity.get().getId());
             }
             if (password != null) {
                 accountEntity.get().setPassword(password);
-                accountRepository.save(accountEntity.get());
+//                accountRepository.save(accountEntity.get());
                 logger.info("ActionLog.updateAccount: password of account with id={} is updated", accountEntity.get().getId());
             }
+            accountEntity.get().setBalance(account.getBalance());
+            accountRepository.save(accountEntity.get());
         } else {
-            logger.error("", new AccountException("No account with such id"));
+            AccountException exception = new AccountException("ActionLog.updateAccount: no account with id=" + account.getId());
+            logger.error("", exception);
+            throw exception;
         }
     }
 
@@ -99,13 +103,56 @@ public class AccountServiceImpl implements AccountService {
     public void deleteAccount(Long id) {
         logger.info("ActionLog.deleteAccount: id={}", id);
         if (id == null) {
-            logger.error("", new AccountException("Giver the valid id!!!!! id should  be >=1!!!!"));
+            logger.error("", new AccountException("ActionLog.deleteAccount: id should  be >=1!!!!"));
         } else {
             Optional<AccountEntity> accountEntity = accountRepository.findById(id);
             if (accountEntity.isPresent()) {
                 accountRepository.deleteById(id);
                 logger.info("ActionLog.deleteAccount: account is deleted");
-            } else logger.error("", new AccountException("No account with such id"));
+            } else {
+                AccountException exception = new AccountException("ActionLog.deleteAccount: no account with id=" + id);
+                logger.error("", exception);
+                throw exception;
+            }
+        }
+    }
+
+    @Override
+    public void increaseBalance(Long customerId, Long accountId, double increaseBy) {
+        if (customerRepository.existsById(customerId)) {
+            Optional<AccountEntity> account = accountRepository.findById(accountId);
+            account.ifPresent(accountEntity -> {
+                double balance = accountEntity.getBalance() + increaseBy;
+                accountEntity.setBalance(balance);
+                accountRepository.save(accountEntity);
+            });
+        } else {
+            CustomerException exception = new CustomerException("ActionLog.increaseBalance: no customer with id=" + customerId);
+            logger.error("", exception);
+            throw exception;
+        }
+    }
+
+    @Override
+    public void decreaseBalance(Long customerId, Long accountId, double decreaseBy) {
+        Optional<CustomerEntity> entity = customerRepository.findById(customerId);
+        if (entity.isPresent()) {
+            Optional<AccountEntity> account = accountRepository.findById(accountId);
+            account.ifPresent(accountEntity -> {
+                double balance = accountEntity.getBalance() - decreaseBy;
+                if(balance>=0){
+                    accountEntity.setBalance(balance);
+                    accountRepository.save(accountEntity);
+                } else {
+                    AccountException exception = new AccountException("ActionLog.decreaseBalance: balance after decreasing<0.Not valid!!!");
+                    logger.error("", exception);
+                    throw exception;
+                }
+            });
+        } else {
+            CustomerException exception = new CustomerException("ActionLog.increaseBalance: no customer with id=" + customerId);
+            logger.error("", exception);
+            throw exception;
         }
     }
 }

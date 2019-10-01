@@ -17,7 +17,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 @AllArgsConstructor
 public class AccountDTO {
     @NotNull(message = "ID can not be null")
-    @Min(1)
+//    @Min(1)
+    @Min(value = 1, message = "ID cannot be less than 1")
     private Long id;
 
     @NotNull(message = "Not valid login")
@@ -29,4 +30,13 @@ public class AccountDTO {
     @Size(min = 8, message = "Password must have minimum 8 characters")
     @Pattern(regexp = "[a-zA-Z]+[!@#$%&0-9]+")
     private String password;
+
+//    @Min(0)
+    @Min(value = 0, message = "balance cannot be less than 0")
+    private double balance;
+
+    @NotNull(message = "Customer ID cannot be null")
+//    @Min(1)
+    @Min(value = 1, message = "customerId cannot be less than 1")
+    private long customerId;
 }

@@ -1,5 +1,6 @@
 --liquibase formatted sql
 --changeset admin:1 runOnChange:true
+
 create table if not exists customers
 (
     id   serial primary key,

@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -24,7 +25,8 @@ public class CustomerController {
     }
 
     @GetMapping("{customerId}")
-    public CustomerDTO getCustomerById(@PathVariable("customerId") Long customerId) {
+    public CustomerDTO getCustomerById(@Min(value = 1, message = "customerId cannot be less than 1")
+                                           @PathVariable("customerId") Long customerId) {
         logger.info("Getting customer with id={}", customerId);
         return customerService.getCustomerById(customerId);
     }
@@ -48,7 +50,8 @@ public class CustomerController {
     }
 
     @DeleteMapping("delete/{customerId}")
-    public void deleteCustomer(@PathVariable Long customerId) {
+    public void deleteCustomer(@Min(value = 1, message = "customerId cannot be less than 1")
+                                   @PathVariable Long customerId) {
         logger.info("Deleting customer with id={}", customerId);
         customerService.deleteCustomer(customerId);
     }

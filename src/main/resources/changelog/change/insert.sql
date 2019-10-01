@@ -1,5 +1,6 @@
 --liquibase formatted sql
 --changeset admin:3 runOnChange:true
+
 insert into customers (name)
 values ('Sabina');
 insert into customers (name)

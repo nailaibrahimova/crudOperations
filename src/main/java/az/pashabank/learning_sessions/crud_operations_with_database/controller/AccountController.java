@@ -1,6 +1,8 @@
 package az.pashabank.learning_sessions.crud_operations_with_database.controller;
 
 import az.pashabank.learning_sessions.crud_operations_with_database.dao.CustomerEntity;
+import az.pashabank.learning_sessions.crud_operations_with_database.exception.AccountException;
+import az.pashabank.learning_sessions.crud_operations_with_database.exception.CustomerException;
 import az.pashabank.learning_sessions.crud_operations_with_database.mapper.CustomerMapper;
 import az.pashabank.learning_sessions.crud_operations_with_database.model.AccountDTO;
 import az.pashabank.learning_sessions.crud_operations_with_database.model.CustomerDTO;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,11 +36,12 @@ public class AccountController {
     }
 
     @GetMapping("{accountId}")
-    public MappingJacksonValue getAccountById(@PathVariable Long accountId) {
+    public MappingJacksonValue getAccountById(@Min(value = 1, message = "accountId cannot be less than 1")
+                                                  @PathVariable Long accountId) {
         logger.info("ActionLog.getAccountById: id={}", accountId);
         AccountDTO accountDTO = accountService.getAccountById(accountId);
 
-        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login");
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login", "balance");
         FilterProvider filters = new SimpleFilterProvider().addFilter("AccountDTOFilter", filter);
         MappingJacksonValue mapping = new MappingJacksonValue(accountDTO);
         mapping.setFilters(filters);
@@ -49,7 +53,7 @@ public class AccountController {
         logger.info("ActionLog.getAllAccounts");
         List<AccountDTO> accountList = accountService.getAllAccounts();
 
-        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login");
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login", "balance");
         FilterProvider filters = new SimpleFilterProvider().addFilter("AccountDTOFilter", filter);
         MappingJacksonValue mapping = new MappingJacksonValue(accountList);
         mapping.setFilters(filters);
@@ -57,35 +61,76 @@ public class AccountController {
         return mapping;
     }
 
-    @GetMapping("/customerId/{customerId}")
-    public MappingJacksonValue getAllAccountsByCustomerId(@PathVariable Long customerId){
+    @GetMapping("/getAccountsByCustomerId/{customerId}")
+    public MappingJacksonValue getAllAccountsByCustomerId(@Min(value = 1, message = "customerId cannot be less than 1")
+                                                              @PathVariable Long customerId) {
         logger.info("ActionLog.getAllAccountsByCustomerId");
-        List<AccountDTO> accountList = accountService.getAllAccountsByCustomerId(customerId);
+        try {
+            List<AccountDTO> accountList = accountService.getAllAccountsByCustomerId(customerId);
 
-        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login");
-        FilterProvider filters = new SimpleFilterProvider().addFilter("AccountDTOFilter", filter);
-        MappingJacksonValue mapping = new MappingJacksonValue(accountList);
-        mapping.setFilters(filters);
+            SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "login", "balance");
+            FilterProvider filters = new SimpleFilterProvider().addFilter("AccountDTOFilter", filter);
+            MappingJacksonValue mapping = new MappingJacksonValue(accountList);
+            mapping.setFilters(filters);
 
-        return mapping;
+            return mapping;
+        } catch (CustomerException e) {
+            logger.error("", e);
+            return null;
+        }
     }
 
     @PostMapping("add")
     public void addAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        logger.info("Adding new account");
+        logger.info("ActionLog.addAccount");
         accountService.addAccount(accountDTO);
     }
 
     @PutMapping("update")
     public void updateAccount(@Valid @RequestBody AccountDTO accountDTO) {
-        logger.info("Updating account with id={}", accountDTO.getId());
-        accountService.updateAccount(accountDTO);
+        logger.info("ActionLog.updateAccount: id={}", accountDTO.getId());
+        try {
+            accountService.updateAccount(accountDTO);
+        } catch (AccountException e) {
+            logger.error("", e);
+        }
     }
 
     @DeleteMapping("delete/{accountId}")
-    public void deleteAccount(@PathVariable Long accountId) {
-        logger.info("Deleting account with id={}", accountId);
-        accountService.deleteAccount(accountId);
+    public void deleteAccount(@Min(value = 1, message = "accountId cannot be less than 1")
+                                  @PathVariable Long accountId) {
+        logger.info("ActionLog.deleteAccount: id={}", accountId);
+        try {
+            accountService.deleteAccount(accountId);
+        } catch (AccountException e) {
+            logger.error("", e);
+        }
+    }
+
+    @GetMapping("{customerId}/increaseBalance/{accountId}/by/{increaseBy}")
+    public void increaseBalance(@Min(value = 1, message = "customerId cannot be less than 1") @PathVariable Long customerId,
+                                @Min(value = 1, message = "accountId cannot be less than 1") @PathVariable Long accountId,
+                                @Min(value = 0, message = "increaseBy cannot be less than 0") @PathVariable double increaseBy) {
+        logger.info("ActionLog.increaseBalance: customerId={}, accountId={}, increaseBy{}", customerId, accountId, increaseBy);
+        try {
+            accountService.increaseBalance(customerId, accountId, increaseBy);
+        } catch (AccountException e) {
+            logger.error("", e);
+        } catch (CustomerException e) {
+            logger.error("", e);
+        }
+    }
+
+    @GetMapping("{customerId}/decreaseBalance/{accountId}/by/{decreaseBy}")
+    public void decreaseBalance(@Min(value = 1, message = "customerId cannot be less than 1") @PathVariable Long customerId,
+                                @Min(value = 1, message = "accountId cannot be less than 1") @PathVariable Long accountId,
+                                @Min(value = 0, message = "decreaseBy cannot be less than 0") @PathVariable double decreaseBy) {
+        logger.info("ActionLog.increaseBalance: customerId={}, accountId={}, increaseBy{}", customerId, accountId, decreaseBy);
+        try {
+            accountService.decreaseBalance(customerId, accountId, decreaseBy);
+        } catch (CustomerException e) {
+            logger.error("", e);
+        }
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -24,6 +24,9 @@ public class AccountEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "balance")
+    private Double balance;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime created_at;

@@ -17,4 +17,8 @@ public interface AccountService {
     void updateAccount(AccountDTO customer);
 
     void deleteAccount(Long id);
+
+    void increaseBalance(Long customerId, Long accountId, double increaseBy);
+
+    void decreaseBalance(Long customerId, Long accountId, double decreaseBy);
 }
